@@ -158,7 +158,7 @@ def extrair_tabela(driver, tabela_element):
     lista = [c.text.strip() for c in celulas if c.text.strip() != ""]
     html = """<table style="border-collapse: collapse; width: 600px; font-family: Arial; border: 1px solid #ddd;">
     <tr style="background-color: #0f4c3a; color: white;"><th style="padding: 10px;">Vendedor</th><th style="padding: 10px;">Comissão</th><th style="padding: 10px;">Prêmiação</th></tr>"""
-    blacklist = ["Meta", "Bonus", "TKM", "PMA", "Tot.", "Vendedor", "Comissão", "Premiação", "Prêmiação", "IPA", "Gorjeta"]
+    blacklist = ["Meta", "Bonus", "TKM", "PMA", "Tot.", "SEM VENDEDOR", "Vendedor", "Comissão", "Premiação", "Prêmiação", "IPA", "Gorjeta"]
     i = 0
     while i < len(lista):
         item = lista[i]
@@ -309,4 +309,5 @@ if __name__ == "__main__":
         a, m, y, h_comissao, h_gorjeta, meta = executar_robo()
         enviar_email(a, m, y, h_comissao, h_gorjeta, meta)
     except Exception as e: print(f"Erro Fatal: {e}")
+
 
