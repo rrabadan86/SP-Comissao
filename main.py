@@ -34,20 +34,27 @@ def forcar_clique(driver, elemento):
     driver.execute_script("arguments[0].click();", elemento)
 
 def ler_meta_planilha_h59():
-    print("\n--- 📊 INICIANDO LEITURA DA PLANILHA (ALVO: LINHA 48) ---")
+    print("\n--- 📊 INICIANDO LEITURA DA PLANILHA (ALVO: CÉLULA B1) ---")
     try:
-        url_csv = f"{URL_PLANILHA}/gviz/tq?tqx=out:csv&sheet=Página1"
-        df = pd.read_csv(url_csv, header=None, dtype=str, skip_blank_lines=False, on_bad_lines='skip', engine='python')
+        # Extrai o ID da planilha da URL configurada
+        sheet_id = URL_PLANILHA.split('/d/')[1].split('/')[0]
+        # Usa o método de exportação direto pelo GID (mais robusto que por nome de aba)
+        url_csv = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid=0"
         
-        linha_alvo = 1
-        coluna_alvo = 2
+        df = pd.read_csv(url_csv, header=None, dtype=str, skip_blank_lines=False)
+        
+        # ALVO: Célula B1
+        # Linha 1 = Índice 0
+        # Coluna B = Índice 1
+        linha_alvo = 0 
+        coluna_alvo = 1
         
         if len(df) > linha_alvo:
             valor_bruto = str(df.iloc[linha_alvo, coluna_alvo])
             if valor_bruto and valor_bruto.lower() != 'nan':
                 valor_limpo = valor_bruto.replace('R$', '').replace(' ', '').replace('.', '')
                 valor_limpo = re.sub(r'[^\d,]', '', valor_limpo)
-                print(f"✅ VALOR CAPTURADO: {valor_limpo}")
+                print(f"✅ VALOR CAPTURADO (B1): {valor_limpo}")
                 return valor_limpo
         return None
     except Exception as e:
@@ -183,14 +190,12 @@ def extrair_tabela_gorjeta(driver, tabela_element):
     html = """<table style="border-collapse: collapse; width: 400px; font-family: Arial; border: 1px solid #ddd;">
     <tr style="background-color: #0f4c3a; color: white;"><th style="padding: 10px;">Vendedor</th><th style="padding: 10px;">Gorjeta</th></tr>"""
     
-    # BLACKLIST REFORÇADA PARA IGNORAR LIXO DA TABELA GRANDE
     blacklist = ["Vendedor", "Gorjeta", "R$ Total", "TKM", "PMA", "IPA", "Meta", "Bonus", "Premiação", "Comissão", "Tot.", "Arom.", "Puro", "Acess."]
     
     i = 0
     while i < len(lista):
         item = lista[i]
         
-        # Filtra lixo antes de processar
         if any(bad in item for bad in blacklist) or (item.startswith("R$") or (len(item)>0 and item[0].isdigit())):
             i += 1
             continue
@@ -202,8 +207,6 @@ def extrair_tabela_gorjeta(driver, tabela_element):
             
         vendedor = item
         gorjeta = "-"
-        
-        # Pega o próximo item que pareça dinheiro
         if i+1 < len(lista):
             prox = lista[i+1]
             if "R$" in prox or (any(c.isdigit() for c in prox) and "," in prox):
@@ -275,21 +278,17 @@ def executar_robo():
         
         driver.switch_to.default_content()
         
-        # 2. Tabela Gorjeta (Tenta achar a MENOR tabela que tem Gorjeta)
-        # O seletor agora é mais genérico para garantir que ache ALGO, mas a função de extração filtra o lixo.
+        # 2. Tabela Gorjeta
         xp_gorjeta = "//div[contains(@class,'visualContainer')][descendant::*[contains(text(), 'Gorjeta')]]"
-        # Pode haver várias, vamos tentar pegar a última encontrada que costuma ser a menor/detalhada ou iterar
         tabelas_possiveis = driver.find_elements(By.XPATH, xp_gorjeta)
         
-        # Lógica: A tabela grande tem MUITAS colunas. A pequena tem poucas.
-        # Vamos tentar pegar a tabela que NÃO tem 'Premiação' dentro dela
         tab_gorjeta = None
         for t in tabelas_possiveis:
-            if "Premiação" not in t.text:
+            # Pega a tabela que NÃO tem 'Premiação' (a pequena)
+            if "Premiação" not in t.get_attribute("textContent"):
                 tab_gorjeta = t
                 break
         
-        # Fallback se não filtrar
         if not tab_gorjeta and tabelas_possiveis: tab_gorjeta = tabelas_possiveis[0]
             
         html_gorjeta = extrair_tabela_gorjeta(driver, tab_gorjeta) if tab_gorjeta else "<p>Erro tab. gorjeta</p>"
@@ -305,5 +304,3 @@ if __name__ == "__main__":
         a, m, y, h_comissao, h_gorjeta, meta = executar_robo()
         enviar_email(a, m, y, h_comissao, h_gorjeta, meta)
     except Exception as e: print(f"Erro: {e}")
-
-
