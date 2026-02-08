@@ -186,7 +186,7 @@ def extrair_tabela_gorjeta(driver, tabela_element):
     html = """<table style="border-collapse: collapse; width: 400px; font-family: Arial; border: 1px solid #ddd;">
     <tr style="background-color: #0f4c3a; color: white;"><th style="padding: 10px;">Vendedor</th><th style="padding: 10px;">Gorjeta</th></tr>"""
     
-    blacklist = ["Vendedor", "Gorjeta", "R$ Total", "TKM", "PMA", "IPA", "Meta", "Bonus", "Premiação", "Comissão", "Tot.", "Arom.", "Puro", "Acess."]
+    blacklist = ["SEM VENDEDOR", "Vendedor", "Gorjeta", "R$ Total", "TKM", "PMA", "IPA", "Meta", "Bonus", "Premiação", "Comissão", "Tot.", "Arom.", "Puro", "Acess."]
     
     i = 0
     while i < len(lista):
@@ -309,5 +309,6 @@ if __name__ == "__main__":
         a, m, y, h_comissao, h_gorjeta, meta = executar_robo()
         enviar_email(a, m, y, h_comissao, h_gorjeta, meta)
     except Exception as e: print(f"Erro Fatal: {e}")
+
 
 
