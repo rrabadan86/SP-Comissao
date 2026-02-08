@@ -220,7 +220,7 @@ def extrair_tabela_gorjeta(driver, tabela_element):
 def enviar_email(anexo, mes, ano, html_comissao, html_gorjeta, meta_valor):
     if not EMAIL_REMETENTE or not SENHA_APP: return
     msg = MIMEMultipart('related')
-    msg['Subject'] = f"Resumo de Comissões e Gorjetas - {mes}/{ano}"
+    msg['Subject'] = f"[TS Vila Madalena] Comissões e Gorjetas - {mes}/{ano}"
     msg['From'] = EMAIL_REMETENTE
     msg['To'] = EMAIL_DESTINATARIO
     texto_meta = f"R$ {meta_valor}" if meta_valor else "Não capturada"
