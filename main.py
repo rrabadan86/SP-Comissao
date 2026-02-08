@@ -22,7 +22,7 @@ SENHA_APP = os.environ.get("EMAIL_PASS")
 EMAIL_DESTINATARIO = os.environ.get("EMAIL_DEST")
 
 URL_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjkwYzNjMmMtNzA2My00M2UxLWFhMTMtZDYyNjJlZDY4MDgzIiwidCI6Ijg5MzJiNTAxLTRkMTQtNGIyOC04ZGUxLTg4YjgzYThiN2MwZCJ9&pageName=a45d0354e465654433c3"
-URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1TdH5znfmbwwYUnDp5lVWVqnJZPzI6afW7aQvGjKEZZE"
+URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1tjQJn9IFeALBVELxFOqleBd5lky4Wm3KGanX0LCFOdI/edit?gid=0#gid=0"
 
 MESES_REV = {
     "janeiro": 1, "fevereiro": 2, "março": 3, "abril": 4,
@@ -39,8 +39,8 @@ def ler_meta_planilha_h59():
         url_csv = f"{URL_PLANILHA}/gviz/tq?tqx=out:csv&sheet=LOJA"
         df = pd.read_csv(url_csv, header=None, dtype=str, skip_blank_lines=False, on_bad_lines='skip', engine='python')
         
-        linha_alvo = 48
-        coluna_alvo = 7
+        linha_alvo = 1
+        coluna_alvo = 2
         
         if len(df) > linha_alvo:
             valor_bruto = str(df.iloc[linha_alvo, coluna_alvo])
@@ -305,3 +305,4 @@ if __name__ == "__main__":
         a, m, y, h_comissao, h_gorjeta, meta = executar_robo()
         enviar_email(a, m, y, h_comissao, h_gorjeta, meta)
     except Exception as e: print(f"Erro: {e}")
+
