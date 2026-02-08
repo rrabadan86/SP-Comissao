@@ -22,6 +22,7 @@ SENHA_APP = os.environ.get("EMAIL_PASS")
 EMAIL_DESTINATARIO = os.environ.get("EMAIL_DEST")
 
 URL_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjkwYzNjMmMtNzA2My00M2UxLWFhMTMtZDYyNjJlZDY4MDgzIiwidCI6Ijg5MzJiNTAxLTRkMTQtNGIyOC04ZGUxLTg4YjgzYThiN2MwZCJ9&pageName=a45d0354e465654433c3"
+# URL DA PLANILHA (Pega a aba 1 usando gid=0)
 URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1tjQJn9IFeALBVELxFOqleBd5lky4Wm3KGanX0LCFOdI/edit?gid=0#gid=0"
 
 MESES_REV = {
@@ -36,18 +37,13 @@ def forcar_clique(driver, elemento):
 def ler_meta_planilha_h59():
     print("\n--- 📊 INICIANDO LEITURA DA PLANILHA (ALVO: CÉLULA B1) ---")
     try:
-        # Extrai o ID da planilha da URL configurada
         sheet_id = URL_PLANILHA.split('/d/')[1].split('/')[0]
-        # Usa o método de exportação direto pelo GID (mais robusto que por nome de aba)
         url_csv = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid=0"
         
         df = pd.read_csv(url_csv, header=None, dtype=str, skip_blank_lines=False)
         
-        # ALVO: Célula B1
-        # Linha 1 = Índice 0
-        # Coluna B = Índice 1
         linha_alvo = 0 
-        coluna_alvo = 1
+        coluna_alvo = 1 
         
         if len(df) > linha_alvo:
             valor_bruto = str(df.iloc[linha_alvo, coluna_alvo])
@@ -218,37 +214,47 @@ def extrair_tabela_gorjeta(driver, tabela_element):
     return html + "</table>"
 
 def enviar_email(anexo, mes, ano, html_comissao, html_gorjeta, meta_valor):
-    if not EMAIL_REMETENTE or not SENHA_APP: return
-    msg = MIMEMultipart('related')
-    msg['Subject'] = f"[TS Vila Madalena] Comissões e Gorjetas - {mes}/{ano}"
-    msg['From'] = EMAIL_REMETENTE
-    msg['To'] = EMAIL_DESTINATARIO
-    texto_meta = f"R$ {meta_valor}" if meta_valor else "Não capturada"
-    
-    html = f"""<html><body>
-    <h2 style='color:#0f4c3a;'>Relatório de Comissionamento</h2>
-    <p>Ref: <b>{mes}/{ano}</b></p>
-    <p><b>Meta da Loja: {texto_meta}</b></p>
-    <br>
-    {html_comissao}
-    <br>
-    <h3 style='color:#0f4c3a;'>Relatório de Gorjetas</h3>
-    {html_gorjeta}
-    <br>
-    <p style="font-family: Arial; font-size: 12px; color: gray;"><i>O print original segue em anexo.</i></p>
-    </body></html>"""
-    
-    msg.attach(MIMEText(html, 'html'))
-    with open(anexo, 'rb') as f:
-        img = MIMEImage(f.read())
-        img.add_header('Content-Disposition', 'attachment', filename=anexo)
-        msg.attach(img)
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(EMAIL_REMETENTE, SENHA_APP)
-    server.send_message(msg)
-    server.quit()
-    print("E-mail enviado!")
+    print("--- Preparando envio de e-mail ---")
+    if not EMAIL_REMETENTE or not SENHA_APP:
+        print("FALHA: Credenciais de e-mail não encontradas nas variáveis de ambiente.")
+        return
+        
+    try:
+        msg = MIMEMultipart('related')
+        msg['Subject'] = f"[TS Vila Madalena] Comissões e Gorjetas - {mes}/{ano}"
+        msg['From'] = EMAIL_REMETENTE
+        msg['To'] = EMAIL_DESTINATARIO
+        texto_meta = f"R$ {meta_valor}" if meta_valor else "Não capturada"
+        
+        html = f"""<html><body>
+        <h2 style='color:#0f4c3a;'>Relatório de Comissionamento</h2>
+        <p>Ref: <b>{mes}/{ano}</b></p>
+        <p><b>Meta da Loja: {texto_meta}</b></p>
+        <br>
+        {html_comissao}
+        <br>
+        <h3 style='color:#0f4c3a;'>Relatório de Gorjetas</h3>
+        {html_gorjeta}
+        <br>
+        <p style="font-family: Arial; font-size: 12px; color: gray;"><i>O print original segue em anexo.</i></p>
+        </body></html>"""
+        
+        msg.attach(MIMEText(html, 'html'))
+        with open(anexo, 'rb') as f:
+            img = MIMEImage(f.read())
+            img.add_header('Content-Disposition', 'attachment', filename=anexo)
+            msg.attach(img)
+            
+        print(f"Conectando ao servidor SMTP (User: {EMAIL_REMETENTE})...")
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(EMAIL_REMETENTE, SENHA_APP)
+        server.send_message(msg)
+        server.quit()
+        print("✅ E-mail enviado com sucesso!")
+        
+    except Exception as e:
+        print(f"❌ ERRO AO ENVIAR E-MAIL: {e}")
 
 def executar_robo():
     valor_meta = ler_meta_planilha_h59()
@@ -284,7 +290,6 @@ def executar_robo():
         
         tab_gorjeta = None
         for t in tabelas_possiveis:
-            # Pega a tabela que NÃO tem 'Premiação' (a pequena)
             if "Premiação" not in t.get_attribute("textContent"):
                 tab_gorjeta = t
                 break
@@ -303,4 +308,4 @@ if __name__ == "__main__":
     try:
         a, m, y, h_comissao, h_gorjeta, meta = executar_robo()
         enviar_email(a, m, y, h_comissao, h_gorjeta, meta)
-    except Exception as e: print(f"Erro: {e}")
+    except Exception as e: print(f"Erro Fatal: {e}")
