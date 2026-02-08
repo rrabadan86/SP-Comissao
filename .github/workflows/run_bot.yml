@@ -1,0 +1,32 @@
+name: Robô Comissões Mensal
+
+on:
+  schedule:
+    # Cron syntax: Minuto Hora Dia Mês Semana
+    # 0 6 9 * * = 11:00 UTC (que é 08:00 da manhã no Brasil/Goiás - UTC-3)
+    - cron: '0 6 9 * *'
+  workflow_dispatch: # Permite rodar manualmente clicando num botão para testar
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar Dependências
+        run: |
+          pip install -r requirements.txt
+
+      - name: Rodar Robô
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_DEST: ${{ secrets.EMAIL_DEST }}
+        run: python main.py
