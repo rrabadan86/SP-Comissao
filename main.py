@@ -21,7 +21,7 @@ EMAIL_REMETENTE = os.environ.get("EMAIL_USER")
 SENHA_APP = os.environ.get("EMAIL_PASS")
 EMAIL_DESTINATARIO = os.environ.get("EMAIL_DEST")
 
-URL_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjkwYzNjMmMtNzA2My00M2UxLWFhMTMtZDYyNjJlZDY4MDgzIiwidCI6Ijg5MzJiNTAxLTRkMTQtNGIyOC04ZGUxLTg4YjgzYThiN2MwZCJ9&pageName=a45d0354e465654433c3"
+URL_BI = "https://app.powerbi.com/view?r=eyJrIjoiOWNmNWY5YWQtNGUzYi00OTAxLTgwMDUtYmExN2Q4YTA0ZDNmIiwidCI6Ijg5MzJiNTAxLTRkMTQtNGIyOC04ZGUxLTg4YjgzYThiN2MwZCJ9&pageName=a45d0354e465654433c3"
 # URL DA PLANILHA (Pega a aba 1 usando gid=0)
 URL_PLANILHA = "https://docs.google.com/spreadsheets/d/1tjQJn9IFeALBVELxFOqleBd5lky4Wm3KGanX0LCFOdI/edit?gid=0#gid=0"
 
@@ -309,3 +309,4 @@ if __name__ == "__main__":
         a, m, y, h_comissao, h_gorjeta, meta = executar_robo()
         enviar_email(a, m, y, h_comissao, h_gorjeta, meta)
     except Exception as e: print(f"Erro Fatal: {e}")
+
