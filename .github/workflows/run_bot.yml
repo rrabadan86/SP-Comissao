@@ -3,8 +3,8 @@ name: Robô Comissões Mensal
 on:
   schedule:
     # Cron syntax: Minuto Hora Dia Mês Semana
-    # 0 6 9 * * = 11:00 UTC (que é 08:00 da manhã no Brasil/Goiás - UTC-3)
-    - cron: '0 6 9 * *'
+    # 0 16 1 * * = 16:00 UTC (que é 13:00 da manhã no Brasil/Goiás - UTC-3)
+    - cron: '0 16 1 * *'
   workflow_dispatch: # Permite rodar manualmente clicando num botão para testar
 
 jobs:
